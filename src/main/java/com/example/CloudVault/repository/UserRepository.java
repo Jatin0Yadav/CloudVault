@@ -7,6 +7,17 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    // Only these methods are in JpaRepo, so other we will have to declare here.
+//    save()
+//    findById()
+//    findAll()
+//    delete()
+//    deleteById()
+//    count()
+//    existsById()
+//    flush()
+//    saveAll()
+
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);

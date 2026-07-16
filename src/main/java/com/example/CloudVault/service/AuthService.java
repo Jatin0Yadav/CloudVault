@@ -7,11 +7,15 @@ import com.example.CloudVault.dto.RegisterResponse;
 import com.example.CloudVault.entity.Role;
 import com.example.CloudVault.entity.User;
 import com.example.CloudVault.exception.EmailAlreadyExistsException;
+import com.example.CloudVault.exception.InvalidCredentialsException;
 import com.example.CloudVault.repository.UserRepository;
+import com.example.CloudVault.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,8 @@ public class AuthService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private JwtService jwtService;
 
     public RegisterResponse register(RegisterRequest request) {
 
@@ -46,9 +52,24 @@ public class AuthService {
         return response;
     }
 
+    public LoginResponse login(@RequestBody LoginRequest request) {
 
-//    public LoginResponse login(@RequestBody LoginRequest request) {
-//
-//    }
+        // 🔥 This is a saved user, use this to fetch details now to authenticate.
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid User or Password"));
+        // orElseThrow returns a User not Optional if user is present.
+
+        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
+            throw new InvalidCredentialsException("Invalid User or Password");
+        }
+
+        return LoginResponse.builder()
+                .token(jwtService.generateToken(user.getEmail()))
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
+    }
 
 }

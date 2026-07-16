@@ -10,8 +10,6 @@ import lombok.*;
 @Builder
 public class ApiResponse<T> {
 
-    private boolean response;
-
     private String message;
 
     private T data;

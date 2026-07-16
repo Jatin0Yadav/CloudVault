@@ -1,5 +1,6 @@
 package com.example.CloudVault.dto;
 
+import com.example.CloudVault.entity.Role;
 import lombok.*;
 
 @Getter
@@ -9,5 +10,14 @@ import lombok.*;
 @Builder
 public class LoginResponse {
 
-    private String message;
+    private String token;
+
+    private String tokenType;
+
+    private Long userId;
+
+    private String email;
+
+    private Role role;
+
 }
