@@ -8,12 +8,10 @@ import com.example.CloudVault.repository.UserRepository;
 import com.example.CloudVault.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.naming.AuthenticationNotSupportedException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,9 +89,28 @@ public class FileServiceImpl implements FileService {
         return response;
     }
 
+
     @Override
-    public List<FileMetadata> getAllFiles() {
-        return List.of();
+    public List<FileResponseDTO> getMyFiles() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email).
+                orElseThrow(() -> new RuntimeException("User not found!"));
+
+        List<FileMetadata> myFiles = fileRepository.findByOwner(user);
+
+        return myFiles.stream()
+                .map(file -> FileResponseDTO.builder()
+                        .id(file.getId())
+                        .originalName(file.getOriginalName())
+                        .contentType(file.getContentType())
+                        .uploaded_at(file.getUploadedAt())
+                        .build()
+                ).toList();
+
     }
 
     @Override

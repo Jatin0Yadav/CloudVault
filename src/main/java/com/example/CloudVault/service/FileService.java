@@ -4,7 +4,6 @@ import com.example.CloudVault.dto.FileResponseDTO;
 import com.example.CloudVault.entity.FileMetadata;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -16,10 +15,6 @@ public interface FileService {
     // Exceptions are also mentioned while mentioning methods in Interfaces.
     FileResponseDTO uploadFile(MultipartFile file) throws IOException;
 
-    List<FileMetadata> getAllFiles();
-
-    FileMetadata getFile(Long id);
-
-    void deleteFile(Long id);
+    List<FileResponseDTO> getMyFiles();
 
 }
