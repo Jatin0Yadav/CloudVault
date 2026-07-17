@@ -2,7 +2,6 @@ package com.example.CloudVault.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Audited;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -14,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class FileMetaData {
+public class FileMetadata {
 
     @Id
     @Column

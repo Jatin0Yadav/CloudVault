@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -40,6 +39,6 @@ public class User {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "owner")      // field name, not JoinColumn name
-    private List<FileMetaData> listFiles;
+    private List<FileMetadata> listFiles;
 
 }
