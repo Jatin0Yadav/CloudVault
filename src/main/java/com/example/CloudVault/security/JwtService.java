@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -74,6 +75,17 @@ public class JwtService {
         );
     }
 
+    //    Many people think isTokenValid() verifies the signature, but in most JJWT implementations, the signature is verified when you parse the token.
+    public boolean isTokenValid(String jwt, UserDetails userDetails) {
 
+        final String username = extractUsername(jwt);
+
+        return userDetails.getUsername().equals(username)
+                && !isTokenExpired(jwt);
+    }
+
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());         // is expiration time before the current time.
+    }
 
 }

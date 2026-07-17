@@ -25,7 +25,7 @@ public class AuthService {
 
     private final PasswordEncoder passwordEncoder;
 
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
     public RegisterResponse register(RegisterRequest request) {
 
