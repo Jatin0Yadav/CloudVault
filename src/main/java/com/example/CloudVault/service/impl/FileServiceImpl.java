@@ -30,22 +30,12 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final UserRepository userRepository;
 
-    private String UPLOAD_DIR = "CloudVault/uploads/";
+    private final String UPLOAD_DIR = "CloudVault/uploads/";
 
     @Override
     public FileResponseDTO uploadFile(MultipartFile file) throws IOException {
 
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        // Email extracted from JWT token
-        String email = authentication.getName();
-
-        // Fetch complete User entity
-        User owner = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        User owner = getCurrent();
 
         // Original filename
         String originalName = file.getOriginalFilename();
@@ -97,12 +87,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public List<FileResponseDTO> getMyFiles() {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        String email = auth.getName();
-
-        User user = userRepository.findByEmail(email).
-                orElseThrow(() -> new RuntimeException("User not found!"));
+        User user = getCurrent();
 
         List<FileMetadata> myFiles = fileRepository.findByOwner(user);
 
@@ -121,10 +106,7 @@ public class FileServiceImpl implements FileService {
     public DownloadResponse downloadFile(Long id) {
 
         // Get currently logged-in user
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getName();
-        User user = userRepository.findByEmail(email).
-                orElseThrow(() -> new RuntimeException("User not found!"));
+        User user = getCurrent();
 
 
         // Find the file in the database
@@ -159,5 +141,39 @@ public class FileServiceImpl implements FileService {
         } catch (MalformedURLException e) {
             throw new RuntimeException("Unable to read file.", e);
         }
+    }
+
+    @Override
+    public String deleteFile(Long id) {
+
+        User user = getCurrent();
+
+        FileMetadata file = fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("File doesn't exist!"));
+
+        if(!user.getId().equals(file.getOwner().getId())) {
+            throw new RuntimeException("You are not authorised to delete the file!");
+        }
+
+        try {
+            Path path = Paths.get(UPLOAD_DIR, file.getOriginalName());
+
+            Files.deleteIfExists(path);
+
+            fileRepository.delete(file);        // deleting metadata from the pg.
+
+            return "File Successfully Deleted";
+
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to delete the file " + e.getMessage());
+        }
+    }
+
+    public User getCurrent() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
     }
 }
