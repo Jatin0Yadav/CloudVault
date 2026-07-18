@@ -1,5 +1,6 @@
 package com.example.CloudVault.service.impl;
 
+import com.example.CloudVault.dto.DownloadResponse;
 import com.example.CloudVault.dto.FileResponseDTO;
 import com.example.CloudVault.entity.FileMetadata;
 import com.example.CloudVault.entity.User;
@@ -7,12 +8,15 @@ import com.example.CloudVault.repository.FileRepository;
 import com.example.CloudVault.repository.UserRepository;
 import com.example.CloudVault.service.FileService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -114,12 +118,46 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileMetadata getFile(Long id) {
-        return null;
-    }
+    public DownloadResponse downloadFile(Long id) {
 
-    @Override
-    public void deleteFile(Long id) {
+        // Get currently logged-in user
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        User user = userRepository.findByEmail(email).
+                orElseThrow(() -> new RuntimeException("User not found!"));
 
+
+        // Find the file in the database
+        FileMetadata file = fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("File not found"));
+
+        // Verify that the logged-in user owns the file
+        if (!file.getOwner().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not authorized to access this file.");
+        }
+
+        try {
+
+            // Create the complete path of the file on disk
+            Path path = Paths.get(UPLOAD_DIR, file.getStoredFileName());
+
+            // Wrap the file into a Spring Resource
+            Resource resource = new UrlResource(path.toUri());
+
+            // Check if the file actually exists
+            if (!resource.exists()) {
+                throw new RuntimeException("File not found on disk.");
+            }
+
+            // Return everything required by the controller
+            return DownloadResponse.builder()
+                    .resource(resource)
+                    .originalFilename(file.getOriginalName())
+                    .contentType(file.getContentType())
+                    .build();
+
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Unable to read file.", e);
+        }
     }
 }

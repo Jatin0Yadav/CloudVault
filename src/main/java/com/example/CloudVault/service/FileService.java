@@ -1,7 +1,7 @@
 package com.example.CloudVault.service;
 
+import com.example.CloudVault.dto.DownloadResponse;
 import com.example.CloudVault.dto.FileResponseDTO;
-import com.example.CloudVault.entity.FileMetadata;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,4 +17,9 @@ public interface FileService {
 
     List<FileResponseDTO> getMyFiles();
 
+//    Spring cannot send a java.io.File directly in an HTTP response.
+//    Instead, it expects a Resource.
+     DownloadResponse downloadFile(Long id);
+
+     String deleteFile(Long id);
 }

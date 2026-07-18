@@ -1,14 +1,16 @@
 package com.example.CloudVault.controller;
 
+import com.example.CloudVault.dto.DownloadResponse;
 import com.example.CloudVault.dto.FileResponseDTO;
 import com.example.CloudVault.service.FileService;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -34,5 +36,22 @@ public class FileController {
         return ResponseEntity.ok(fileService.getMyFiles());
 
     }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
+
+        DownloadResponse response = fileService.downloadFile(id);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(response.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + response.getOriginalFilename() + "\"")
+                .body(response.getResource());
+
+        // Using DownloadResponse DTO we are only returning the resource cuz browser doesn't need Json.
+        // This DTO is for internal request.
+    }
+
+
 
 }
