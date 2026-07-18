@@ -52,6 +52,13 @@ public class FileController {
         // This DTO is for internal request.
     }
 
+    @GetMapping("/{id}/delete")
+    public ResponseEntity<String> deleteFile(@PathVariable Long id) {
+        String msg = fileService.deleteFile(id);
+
+        return ResponseEntity.ok()
+                        .body(msg);
+    }
 
 
 }

@@ -2,6 +2,7 @@ package com.example.CloudVault.service;
 
 import com.example.CloudVault.dto.DownloadResponse;
 import com.example.CloudVault.dto.FileResponseDTO;
+import com.example.CloudVault.dto.RenameFileRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,4 +23,6 @@ public interface FileService {
      DownloadResponse downloadFile(Long id);
 
      String deleteFile(Long id);
+
+     FileResponseDTO renameFile(Long id, RenameFileRequest request);
 }
