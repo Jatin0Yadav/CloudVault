@@ -27,6 +27,18 @@ public class FileServiceImpl implements FileService {
     private final UserRepository userRepository;
     private final StorageService storageService;
 
+    // Helper method to fetch logged-in user
+    private User getCurrent() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        assert auth != null;
+        String email = auth.getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+    }
+
     @Override
     public FileResponseDTO uploadFile(MultipartFile file) throws IOException {
 
@@ -78,11 +90,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public DownloadResponse downloadFile(Long id) {
+    public DownloadResponse downloadFile(Long file_id) {
 
         User user = getCurrent();
 
-        FileMetadata file = fileRepository.findById(id)
+        FileMetadata file = fileRepository.findById(file_id)
                 .orElseThrow(() -> new RuntimeException("File not found"));
 
         if (!file.getOwner().getId().equals(user.getId())) {
@@ -99,11 +111,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String deleteFile(Long id) {
+    public String deleteFile(Long file_id) {
 
         User user = getCurrent();
 
-        FileMetadata file = fileRepository.findById(id)
+        FileMetadata file = fileRepository.findById(file_id)
                 .orElseThrow(() -> new RuntimeException("File doesn't exist!"));
 
         if (!user.getId().equals(file.getOwner().getId())) {
@@ -120,11 +132,11 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public FileResponseDTO renameFile(Long id, RenameFileRequest request) {
+    public FileResponseDTO renameFile(Long file_id, RenameFileRequest request) {
 
         User user = getCurrent();
 
-        FileMetadata file = fileRepository.findById(id)
+        FileMetadata file = fileRepository.findById(file_id)
                 .orElseThrow(() -> new RuntimeException("File doesn't exist"));
 
         if (!file.getOwner().getId().equals(user.getId())) {
@@ -144,14 +156,20 @@ public class FileServiceImpl implements FileService {
                 .build();
     }
 
-    // Helper method to fetch logged-in user
-    private User getCurrent() {
+    @Override
+    public List<FileResponseDTO> searchFiles(String keyword) {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User user = getCurrent();
 
-        String email = auth.getName();
+        List<FileMetadata> files = fileRepository.findByOwnerAndOriginalNameContainingIgnoreCase(user, keyword);
 
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User doesn't exist!"));
+        return files.stream()
+                .map(file -> FileResponseDTO.builder()
+                        .originalName(file.getOriginalName())
+                        .size(file.getSize())
+                        .contentType(file.getContentType())
+                        .uploaded_at(file.getUploadedAt())
+                        .build()
+                ).toList();
     }
 }

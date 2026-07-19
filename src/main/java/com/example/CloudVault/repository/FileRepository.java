@@ -17,4 +17,8 @@ public interface FileRepository extends JpaRepository<FileMetadata, Long> {
     // To fetch only one file of given user.
     // Cuz two users can have same file_name and even id, cuz we are maintaining all the files in one db.
     Optional<FileMetadata> findByIdAndOwner(Long id, User owner);
+
+    // Repo se actual entity hi pull krna hai, service layer me dto se show krna hai, controller me reponseEntity ka use krk return krna hai.
+    List<FileMetadata> findByOwnerAndOriginalNameContainingIgnoreCase(User owner, String name);
+
 }

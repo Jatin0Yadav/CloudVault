@@ -2,6 +2,8 @@ package com.example.CloudVault.controller;
 
 import com.example.CloudVault.dto.DownloadResponse;
 import com.example.CloudVault.dto.FileResponseDTO;
+import com.example.CloudVault.dto.RenameFileRequest;
+import com.example.CloudVault.entity.FileMetadata;
 import com.example.CloudVault.service.FileService;
 import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
@@ -61,4 +63,22 @@ public class FileController {
     }
 
 
+    @GetMapping("/{id}/rename")
+    public ResponseEntity<FileResponseDTO> renameFile(@PathVariable Long id, @RequestBody RenameFileRequest request) {
+
+        FileResponseDTO fileResponseDTO = fileService.renameFile(id, request);
+
+        return ResponseEntity.ok()
+                .body(fileResponseDTO);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FileResponseDTO>> searchFiles(@RequestParam String keyword) {
+
+        List<FileResponseDTO> files = fileService.searchFiles(keyword);
+
+        return ResponseEntity.ok()
+                .body(files);
+
+    }
 }
