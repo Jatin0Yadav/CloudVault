@@ -1,0 +1,38 @@
+# This file shows how multi-container applications are managed.
+# Docker Compose automatically creates a private network for all services in the same compose file.
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: cloudvault-postgres
+
+    # Env-variables of postgres container
+    environment:
+      POSTGRES_DB: cloudvault
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: password
+
+    # So tools like pgAdmin or IntelliJ on your Mac can connect to the database.
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cloudvault:
+    build: .
+
+    container_name: cloudvault-app
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8080:8080"
+
+    restart: unless-stopped       # restart policy
+
+volumes:
+  postgres_data:
