@@ -1,4 +1,4 @@
-name: Cloudvault
+name: Cloudvault CI
 
 on:
   push:
