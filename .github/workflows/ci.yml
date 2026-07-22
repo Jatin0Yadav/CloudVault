@@ -1,9 +1,9 @@
-name: Cloudvault CI
+name: CloudVault CI
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   first_job:
@@ -11,4 +11,4 @@ jobs:
 
     steps:
       - name: Print Welcome Message
-        run: echo "Hello from Github Actions"
+        run: echo "Hello from GitHub Actions!"
